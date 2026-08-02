@@ -256,6 +256,17 @@ body.pointer .spotlight{opacity:1}
 .d:hover .d-zoom span{transform:scale(1)}
 .noresult{grid-column:1/-1;text-align:center;padding:60px 0;color:var(--tx3);font-weight:200}
 
+/* ---------- เมนูที่ยังไม่มีไฟล์รูป ---------- */
+.nopic{background:radial-gradient(130% 100% at 50% 10%,#2b2039,#130d1d 70%)}
+.soon{position:absolute;left:0;right:0;top:38%;transform:translateY(-50%);z-index:1;
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+  font-size:11.5px;letter-spacing:1.8px;color:var(--tx3)}
+.soon em{font-style:normal;font-size:38px;opacity:.45}
+.nopic .d-zoom{display:none}
+.lb-img.nopic{display:grid;place-items:center}
+.lb-img.nopic .soon{position:static;transform:none;font-size:13px}
+.lb-img.nopic .soon em{font-size:60px}
+
 /* ==================================================================
    รีวิว
    ================================================================== */

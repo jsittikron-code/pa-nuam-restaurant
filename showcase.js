@@ -24,6 +24,21 @@
   /* ---------- ดาว ---------- */
   const stars = n => '★★★★★'.slice(0, n) + '☆☆☆☆☆'.slice(0, 5 - n);
 
+  /* ---------- เมนูที่ยังไม่มีไฟล์รูป ----------
+     เปลี่ยนเป็นการ์ด "รูปเร็ว ๆ นี้" แทนที่จะโชว์รูปแตก
+     พอวางไฟล์รูปลง img/ แล้วส่วนนี้จะเลิกทำงานเอง */
+  window.noPic = img => {
+    const box = img.closest('.sg, .d, .lb-img');
+    if (box && !box.classList.contains('nopic')) {
+      box.classList.add('nopic');
+      const s = document.createElement('span');
+      s.className = 'soon';
+      s.innerHTML = '<em>🍽️</em>รูปเร็ว ๆ นี้';
+      box.appendChild(s);
+    }
+    img.remove();
+  };
+
   /* ---------- คะแนนรวม / คะแนนรายเมนู ---------- */
   const avg = LIST.length ? LIST.reduce((s, r) => s + r.rating, 0) / LIST.length : 0;
   const byDish = {};
@@ -167,7 +182,7 @@
     $('#sig').innerHTML = list.map((m, i) => {
       const r = dishRate(m.id);
       return `<article class="sg reveal" data-id="${m.id}">
-        <img src="${m.img}" alt="${esc(m.th)}" loading="lazy">
+        <img src="${m.img}" alt="${esc(m.th)}" loading="lazy" onerror="noPic(this)">
         <span class="sg-n">${String(i + 1).padStart(2, '0')}</span>
         <span class="sg-p">${money(m.price)}</span>
         <div class="sg-t">
@@ -196,7 +211,7 @@
     const box = $('#dishes');
     box.innerHTML = shown.length ? shown.map(m => `
       <article class="d reveal" data-id="${m.id}">
-        <img src="${m.img}" alt="${esc(m.th)}" loading="lazy">
+        <img src="${m.img}" alt="${esc(m.th)}" loading="lazy" onerror="noPic(this)">
         ${m.hot ? '<span class="d-hot">ขายดี</span>' : ''}
         <span class="d-p">${money(m.price)}</span>
         <div class="d-zoom"><span>⤢</span></div>
@@ -229,7 +244,7 @@
     const revs = (byDish[m.id] || []).slice(0, 2);
 
     $('#lbIn').innerHTML = `
-      <div class="lb-img"><img src="${m.img}" alt="${esc(m.th)}"></div>
+      <div class="lb-img"><img src="${m.img}" alt="${esc(m.th)}" onerror="noPic(this)"></div>
       <div class="lb-b">
         <span class="lb-cat">${esc(m.cat)}${m.hot ? ' · ขายดี' : ''}</span>
         <h3>${esc(m.th)}</h3>

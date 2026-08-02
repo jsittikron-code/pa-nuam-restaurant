@@ -108,6 +108,13 @@ select:focus,input:focus,textarea:focus{border-color:var(--g2)}
   font-size:12px;font-weight:800;padding:2px 9px;border-radius:99px}
 .empty{text-align:center;padding:60px 0;color:var(--tx3)}
 
+/* เมนูที่ยังไม่มีไฟล์รูป */
+.pi.nopic{background:radial-gradient(130% 100% at 50% 12%,#241a30,#0f0a18 70%)}
+.pi .soon{position:absolute;left:0;right:0;top:42%;transform:translateY(-50%);z-index:1;
+  display:flex;flex-direction:column;align-items:center;gap:9px;
+  font-size:11px;letter-spacing:1.4px;color:var(--tx3)}
+.pi .soon em{font-style:normal;font-size:32px;opacity:.45}
+
 /* ============ แถบตะกร้าลอย ============ */
 .cartbar{position:fixed;left:0;right:0;bottom:0;z-index:60;
   background:rgba(15,10,24,.96);backdrop-filter:blur(16px);

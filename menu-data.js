@@ -32,6 +32,7 @@ window.CATS = [
   { id: 'ทะเล',     c1: '#46dcff', c2: '#ff7a4d' },
   { id: 'สุกี้น้ำ', c1: '#b98bff', c2: '#5e6bff' },
   { id: 'ผัก',      c1: '#39e0a0', c2: '#9bd64a' },
+  { id: 'หมูกรอบ',  c1: '#ffc46b', c2: '#d2691e' },
 ];
 
 window.MENU = [
@@ -54,4 +55,10 @@ window.MENU = [
   { id: 17, cat: 'ทะเล',     price: 70, th: 'หมึกทอดกระเทียม',            en: 'Crispy Garlic Calamari',          cn: '蒜香炸鱿鱼',      img: 'img/17.jpg' },
   { id: 18, cat: 'เนื้อ',    price: 80, th: 'เนื้อพริกหยวกไข่ดาว',        en: 'Beef w/ Green Pepper & Fried Egg', cn: '青椒牛肉配煎蛋',  img: 'img/18.jpg' },
   { id: 19, cat: 'ผัก',      price: 70, th: 'ผักบุ้งไฟแดง',               en: 'Stir-fried Morning Glory',        cn: '猛火炒空心菜',    img: 'img/19.jpg', hot: true },
+
+  /* ---- เมนูหมูกรอบ (เพิ่มใหม่) ---- */
+  { id: 20, cat: 'หมูกรอบ',  price: 70,  th: 'ผักบุ้งหมูกรอบ',            en: 'Morning Glory w/ Crispy Pork',       cn: '脆皮猪肉炒空心菜',   img: 'img/20.jpg' },
+  { id: 21, cat: 'หมูกรอบ',  price: 80,  th: 'หมูกรอบคั่วพริกเกลือไข่ดาว', en: 'Salt & Chili Crispy Pork w/ Fried Egg', cn: '椒盐脆皮猪肉配煎蛋', img: 'img/21.jpg' },
+  { id: 22, cat: 'หมูกรอบ',  price: 80,  th: 'ข้าวคะน้าหมูกรอบไข่ดาว',    en: 'Kale w/ Crispy Pork & Fried Egg',    cn: '芥蓝脆皮猪肉配煎蛋', img: 'img/22.jpg' },
+  { id: 23, cat: 'หมูกรอบ',  price: 120, th: 'คะน้าหมูกรอบ (กับข้าว)',    en: 'Stir-fried Kale w/ Crispy Pork',     cn: '脆皮猪肉炒芥蓝',    img: 'img/23.jpg' },
 ];
