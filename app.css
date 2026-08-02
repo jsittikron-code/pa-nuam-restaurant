@@ -1,0 +1,203 @@
+/* ============ ธีมหลัก (โทนเดียวกับโปสเตอร์เมนูป้านวม) ============ */
+:root{
+  --bg:#0a0712; --bg2:#0f0a18; --card:#17111f; --card2:#120c1a;
+  --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.16);
+  --tx:#fff; --tx2:#d9cce6; --tx3:#b9a9c8;
+  --g1:#ffd24a; --g2:#ff5e1a; --g3:#ff2247;
+  --ok:#39e0a0; --warn:#ffb020; --bad:#ff5470;
+  --r:14px; --sh:0 10px 30px rgba(0,0,0,.45);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Kanit',-apple-system,'Segoe UI','Leelawadee UI',Tahoma,sans-serif;
+  background:
+    radial-gradient(900px 500px at 85% -10%,rgba(255,94,26,.20),transparent 60%),
+    radial-gradient(700px 420px at -10% 8%,rgba(255,34,71,.15),transparent 55%),
+    linear-gradient(170deg,var(--bg),var(--bg2) 55%,var(--bg));
+  background-attachment:fixed;
+  color:var(--tx); min-height:100vh; padding-bottom:96px;
+}
+.cn{font-family:'Noto Sans SC','Kanit',sans-serif}
+.grad{background:linear-gradient(100deg,var(--g1),var(--g2) 45%,var(--g3));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+a{color:inherit}
+button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit}
+img{max-width:100%;display:block}
+
+/* ============ แถบบน ============ */
+.topbar{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);
+  background:rgba(10,7,18,.82);border-bottom:1px solid var(--line)}
+.topbar .wrap{display:flex;align-items:center;gap:14px;height:62px}
+.logo{font-weight:900;font-size:20px;letter-spacing:.5px;white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:99px;display:inline-block;margin-right:6px}
+.dot.on{background:var(--ok);box-shadow:0 0 10px var(--ok)}
+.dot.off{background:var(--bad)}
+.status{font-size:12.5px;color:var(--tx2);white-space:nowrap}
+.spacer{flex:1}
+.btn{padding:9px 16px;border-radius:11px;font-size:14px;font-weight:600;
+  border:1px solid var(--line2);transition:.18s;white-space:nowrap}
+.btn:hover{background:rgba(255,255,255,.07);transform:translateY(-1px)}
+.btn.primary{background:linear-gradient(100deg,var(--g1),var(--g2) 60%,var(--g3));
+  color:#1a1020;border:0;font-weight:700}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ghost{border-color:transparent;color:var(--tx2)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+/* ============ ฮีโร่ ============ */
+.hero{padding:34px 0 18px;text-align:center}
+.hero h1{font-size:clamp(30px,6vw,50px);font-weight:900;line-height:1.1}
+.hero p{color:var(--tx2);margin-top:8px;font-size:14.5px}
+.info{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.pill{border:1px solid var(--line);background:rgba(255,255,255,.04);
+  padding:7px 14px;border-radius:99px;font-size:13px;color:var(--tx2)}
+
+/* ============ รูปแบบการสั่ง + ค้นหา ============ */
+.bar{position:sticky;top:62px;z-index:40;background:rgba(10,7,18,.9);
+  backdrop-filter:blur(14px);padding:12px 0;border-bottom:1px solid var(--line)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.seg{display:flex;background:rgba(255,255,255,.05);border:1px solid var(--line);
+  border-radius:12px;padding:3px;gap:3px}
+.seg button{padding:8px 15px;border-radius:9px;font-size:13.5px;font-weight:600;color:var(--tx3)}
+.seg button.on{background:linear-gradient(100deg,var(--g1),var(--g2));color:#1a1020}
+select,input[type=text],input[type=tel],textarea{
+  background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--tx);
+  padding:9px 13px;border-radius:11px;font-family:inherit;font-size:14px;outline:0}
+select:focus,input:focus,textarea:focus{border-color:var(--g2)}
+.search{flex:1;min-width:170px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:12px 0 2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{padding:7px 15px;border-radius:99px;border:1px solid var(--line);
+  font-size:13.5px;color:var(--tx2);white-space:nowrap;transition:.18s}
+.chip.on{background:linear-gradient(100deg,var(--g1),var(--g2));color:#1a1020;
+  border-color:transparent;font-weight:700}
+
+/* ============ การ์ดเมนู ============ */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(224px,1fr));gap:16px;padding:20px 0}
+.pc{position:relative;border-radius:var(--r);overflow:hidden;
+  background:linear-gradient(180deg,var(--card),var(--card2));
+  border:1px solid var(--line);transition:.2s;cursor:pointer}
+.pc:hover{transform:translateY(-4px);box-shadow:var(--sh);border-color:var(--line2)}
+.pc::before{content:"";position:absolute;inset:0;border-radius:var(--r);padding:1.4px;
+  background:linear-gradient(135deg,var(--c1),var(--c2));opacity:.85;
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;z-index:2}
+.pi{position:relative;aspect-ratio:1/1;overflow:hidden;background:#0d0916}
+.pi img{width:100%;height:100%;object-fit:cover;transition:.4s}
+.pc:hover .pi img{transform:scale(1.07)}
+.pi::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(18,12,26,.95),transparent 55%)}
+.pcat{position:absolute;top:8px;left:8px;z-index:2;font-size:11px;font-weight:600;
+  color:#1a1020;padding:3px 10px;border-radius:99px;
+  background:linear-gradient(100deg,var(--c1),var(--c2))}
+.pp{position:absolute;top:8px;right:8px;z-index:2;font-weight:800;font-size:15px;
+  padding:4px 11px;border-radius:10px;background:rgba(10,7,18,.75);
+  border:1px solid var(--line2)}
+.hotbadge{position:absolute;bottom:8px;left:8px;z-index:2;font-size:11px;
+  background:rgba(255,34,71,.9);padding:3px 9px;border-radius:99px;font-weight:600}
+.pb{padding:10px 12px 14px;position:relative;z-index:2}
+.pth{font-size:15px;font-weight:700;line-height:1.25}
+.pen{font-size:10.5px;color:var(--tx3);margin-top:2px}
+.pcn{font-size:11.5px;color:var(--tx2)}
+.add{position:absolute;right:10px;bottom:10px;width:36px;height:36px;border-radius:99px;
+  background:linear-gradient(100deg,var(--g1),var(--g2));color:#1a1020;font-size:22px;
+  font-weight:700;display:grid;place-items:center;z-index:3;box-shadow:0 4px 14px rgba(255,94,26,.4)}
+.add:hover{transform:scale(1.1)}
+.qty-badge{position:absolute;top:8px;right:8px;z-index:4;background:var(--ok);color:#04120c;
+  font-size:12px;font-weight:800;padding:2px 9px;border-radius:99px}
+.empty{text-align:center;padding:60px 0;color:var(--tx3)}
+
+/* ============ แถบตะกร้าลอย ============ */
+.cartbar{position:fixed;left:0;right:0;bottom:0;z-index:60;
+  background:rgba(15,10,24,.96);backdrop-filter:blur(16px);
+  border-top:1px solid var(--line2);transform:translateY(120%);transition:.28s}
+.cartbar.show{transform:translateY(0)}
+.cartbar .wrap{display:flex;align-items:center;gap:14px;height:74px}
+.cartinfo b{font-size:19px}
+.cartinfo div{font-size:12px;color:var(--tx3)}
+
+/* ============ Overlay / Panel ============ */
+.ov{position:fixed;inset:0;z-index:80;background:rgba(4,2,8,.72);backdrop-filter:blur(4px);
+  display:none;align-items:flex-end;justify-content:center}
+.ov.show{display:flex}
+.sheet{background:linear-gradient(180deg,#17111f,#100b18);width:100%;max-width:560px;
+  max-height:88vh;overflow:auto;border-radius:20px 20px 0 0;border:1px solid var(--line2);
+  border-bottom:0;padding:18px;animation:up .25s ease}
+@keyframes up{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+@media(min-width:640px){.ov{align-items:center}.sheet{border-radius:20px;border-bottom:1px solid var(--line2)}}
+.sheet h3{font-size:19px;margin-bottom:4px}
+.sh-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}
+.close{font-size:26px;line-height:1;color:var(--tx3);padding:0 6px}
+.label{font-size:13px;color:var(--tx3);margin:14px 0 7px}
+.opts{display:flex;gap:8px;flex-wrap:wrap}
+.opt{padding:8px 14px;border-radius:10px;border:1px solid var(--line);font-size:13.5px;
+  color:var(--tx2);transition:.15s}
+.opt.on{background:rgba(255,94,26,.16);border-color:var(--g2);color:#fff}
+.stepper{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.05);
+  border:1px solid var(--line);border-radius:12px;padding:6px 10px;width:fit-content}
+.stepper button{width:32px;height:32px;border-radius:8px;font-size:20px;
+  background:rgba(255,255,255,.08);display:grid;place-items:center}
+.stepper b{min-width:26px;text-align:center;font-size:17px}
+textarea{width:100%;resize:vertical;min-height:60px}
+
+/* ============ รายการในตะกร้า ============ */
+.line{display:flex;gap:12px;padding:12px 0;border-bottom:1px dashed var(--line)}
+.line img{width:56px;height:56px;border-radius:10px;object-fit:cover;flex-shrink:0}
+.line .n{flex:1;min-width:0}
+.line .n b{font-size:14.5px;display:block}
+.line .n small{color:var(--tx3);font-size:11.5px;display:block;line-height:1.5}
+.line .p{text-align:right;font-weight:700;white-space:nowrap}
+.tot{display:flex;justify-content:space-between;padding:7px 0;font-size:14px;color:var(--tx2)}
+.tot.big{font-size:20px;font-weight:800;color:#fff;border-top:1px solid var(--line2);
+  margin-top:8px;padding-top:14px}
+
+/* ============ สลิป/ใบเสร็จ ============ */
+.slip{background:#fff;color:#111;border-radius:12px;padding:20px;font-size:13.5px;
+  font-family:'Kanit',sans-serif}
+.slip h4{text-align:center;font-size:18px}
+.slip .c{text-align:center;color:#555;font-size:11.5px}
+.slip hr{border:0;border-top:1px dashed #999;margin:11px 0}
+.slip .l{display:flex;justify-content:space-between;gap:10px;padding:3px 0}
+.qnum{text-align:center;margin:14px 0}
+.qnum b{font-size:52px;font-weight:900;line-height:1;display:block}
+
+/* ============ จอครัว ============ */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:18px 0}
+.kpi{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);
+  border-radius:var(--r);padding:14px 16px}
+.kpi small{color:var(--tx3);font-size:12px}
+.kpi b{display:block;font-size:26px;font-weight:800;margin-top:3px}
+.board{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px;padding-bottom:30px}
+.col{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:var(--r);padding:12px}
+.col h3{font-size:15px;display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.col h3 span{font-size:12px;background:rgba(255,255,255,.1);padding:2px 9px;border-radius:99px}
+.ord{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);
+  border-left:3px solid var(--g2);border-radius:12px;padding:12px;margin-bottom:10px}
+.ord.new{border-left-color:var(--warn);animation:blink 1.6s ease-in-out infinite}
+.ord.cooking{border-left-color:var(--g2)}
+.ord.ready{border-left-color:var(--ok)}
+.ord.paid{border-left-color:#666;opacity:.75}
+@keyframes blink{0%,100%{box-shadow:0 0 0 0 rgba(255,176,32,0)}50%{box-shadow:0 0 0 4px rgba(255,176,32,.13)}}
+.ord .h{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.ord .q{font-size:19px;font-weight:800}
+.ord .meta{font-size:11.5px;color:var(--tx3)}
+.ord ul{list-style:none;font-size:13.5px}
+.ord li{padding:3px 0;display:flex;justify-content:space-between;gap:8px}
+.ord li small{color:var(--tx3);font-size:11px;display:block}
+.ord .f{display:flex;gap:8px;margin-top:10px;align-items:center}
+.ord .f .btn{padding:7px 12px;font-size:13px;flex:1;text-align:center}
+.note{background:rgba(255,176,32,.12);border:1px solid rgba(255,176,32,.3);color:#ffd79a;
+  padding:5px 9px;border-radius:8px;font-size:12px;margin-top:8px}
+
+/* ============ ท้ายหน้า ============ */
+footer{border-top:1px solid var(--line);margin-top:30px;padding:24px 0 10px;
+  text-align:center;color:var(--tx3);font-size:12.5px}
+footer b{color:var(--tx);font-size:14px;display:block;margin-bottom:5px}
+
+@media print{
+  body>*{display:none!important}
+  #printArea{display:block!important;position:static}
+  .slip{box-shadow:none;border-radius:0;max-width:80mm;margin:0 auto}
+}

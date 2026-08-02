@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ป้านวม · สั่งอาหาร</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700;900&family=Cormorant+Garamond:wght@500;600;700&family=Noto+Sans+SC&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="luxe.css">
+</head>
+<body>
+
+<!-- ================= ฉากหลังเคลื่อนไหว (ตกแต่งอย่างเดียว) ================= -->
+<div class="ambient" aria-hidden="true">
+  <span class="orb o1"></span><span class="orb o2"></span><span class="orb o3"></span>
+  <div class="grain"></div>
+</div>
+<div class="embers" aria-hidden="true"></div>
+
+<!-- ================= ม่านเปิดร้าน (คลิกเพื่อข้าม) ================= -->
+<div class="intro" id="intro" aria-hidden="true">
+  <div class="intro-mark">
+    <span class="ring"></span>
+    <b>ป้านวม</b>
+    <small>PANUAM KITCHEN</small>
+  </div>
+</div>
+
+<!-- ================= แถบบน ================= -->
+<header class="topbar">
+  <div class="wrap">
+    <div>
+      <div class="logo">PANUAM <span class="grad">KITCHEN</span></div>
+      <div class="status" id="openStatus"></div>
+    </div>
+    <div class="spacer"></div>
+    <a class="btn ghost" href="tel:082-641-4370">📞 โทรสั่ง</a>
+    <a class="btn" href="kitchen.html">👨‍🍳 จอครัว</a>
+  </div>
+</header>
+
+<!-- ================= ฮีโร่ ================= -->
+<section class="hero wrap">
+  <h1>ร้านอาหาร<span class="grad">ป้านวม</span></h1>
+  <div class="orn" aria-hidden="true"><i></i><span>◆</span><i></i></div>
+  <p id="tagline"></p>
+  <div class="info">
+    <span class="pill">🕖 เปิด 07:00 – 15:30 ทุกวัน</span>
+    <span class="pill">📍 สุขุมวิท 20 ปากซอย</span>
+    <span class="pill">🔥 ปรุงสดทุกจาน</span>
+  </div>
+</section>
+
+<!-- ================= แถบเลือกรูปแบบ + ค้นหา ================= -->
+<div class="bar">
+  <div class="wrap">
+    <div class="row">
+      <div class="seg">
+        <button id="btnDine" class="on" onclick="setType('dinein')">🍽️ ทานที่ร้าน</button>
+        <button id="btnTake" onclick="setType('takeaway')">🛍️ กลับบ้าน</button>
+      </div>
+      <select id="tableSel" onchange="S.table=this.value"></select>
+      <input class="search" id="q" type="text" placeholder="ค้นหาเมนู เช่น กะเพรา, หมู, squid…" oninput="S.q=this.value;renderGrid()">
+    </div>
+    <div class="chips" id="chips"></div>
+  </div>
+</div>
+
+<!-- ================= เมนู ================= -->
+<main class="wrap"><div class="grid" id="grid"></div></main>
+
+<footer class="wrap">
+  <b>ร้านอาหารป้านวม · PANUAM KITCHEN</b>
+  📞 082-641-4370 · 📍 สุขุมวิท 20 ปากซอย กรุงเทพฯ · Soi Sukhumvit 20, Bangkok<br>
+  เปิดทุกวัน 07:00 – 15:30 · ไทย / English / 中文
+</footer>
+
+<!-- ================= แถบตะกร้าลอย ================= -->
+<div class="cartbar" id="cartbar">
+  <div class="wrap">
+    <div class="cartinfo">
+      <b id="cartTotal">฿0</b>
+      <div id="cartCount">0 รายการ</div>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn ghost" onclick="clearCart()">ล้าง</button>
+    <button class="btn primary" onclick="openCart()">ดูตะกร้า / สั่งเลย →</button>
+  </div>
+</div>
+
+<!-- ================= Overlay: เลือกตัวเลือกอาหาร ================= -->
+<div class="ov" id="ovItem" onclick="if(event.target===this)hide('ovItem')">
+  <div class="sheet" id="itemSheet"></div>
+</div>
+
+<!-- ================= Overlay: ตะกร้า ================= -->
+<div class="ov" id="ovCart" onclick="if(event.target===this)hide('ovCart')">
+  <div class="sheet" id="cartSheet"></div>
+</div>
+
+<!-- ================= Overlay: สั่งสำเร็จ ================= -->
+<div class="ov" id="ovDone" onclick="if(event.target===this)hide('ovDone')">
+  <div class="sheet" id="doneSheet"></div>
+</div>
+
+<!-- พื้นที่สำหรับสั่งพิมพ์ใบสั่งอาหาร -->
+<div id="printArea" style="display:none"></div>
+
+<script src="menu-data.js"></script>
+<script src="store.js"></script>
+<script>
+/* ================= สถานะของหน้า ================= */
+var S = { type:'dinein', table:'1', cat:'ทั้งหมด', q:'', cart:[] };
+const $ = id => document.getElementById(id);
+const catColor = c => CATS.find(x => x.id === c) || { c1:'#888', c2:'#555' };
+const esc = s => String(s).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+
+/* ================= เริ่มต้น ================= */
+function init(){
+  $('tagline').textContent = SHOP.tagline;
+  // สถานะเปิด/ปิดร้าน
+  const op = DB.isOpen();
+  $('openStatus').innerHTML = `<span class="dot ${op?'on':'off'}"></span>${op?'เปิดอยู่ตอนนี้':'ปิดแล้ว · เปิด 07:00'}`;
+  // ตัวเลือกโต๊ะ
+  $('tableSel').innerHTML = Array.from({length:SHOP.tables},(_,i)=>
+    `<option value="${i+1}">โต๊ะ ${i+1}</option>`).join('');
+  // ชิปหมวดหมู่
+  const cats = ['ทั้งหมด', ...CATS.map(c=>c.id)];
+  $('chips').innerHTML = cats.map(c=>
+    `<button class="chip ${c===S.cat?'on':''}" onclick="setCat('${c}')">${c}</button>`).join('');
+  renderGrid();
+}
+function setCat(c){ S.cat = c; init(); }
+function setType(t){
+  S.type = t;
+  $('btnDine').classList.toggle('on', t==='dinein');
+  $('btnTake').classList.toggle('on', t==='takeaway');
+  $('tableSel').style.display = t==='dinein' ? '' : 'none';
+  renderCartBar();
+}
+
+/* ================= แสดงการ์ดเมนู ================= */
+function renderGrid(){
+  const q = S.q.trim().toLowerCase();
+  const list = MENU.filter(m =>
+    (S.cat==='ทั้งหมด' || m.cat===S.cat) &&
+    (!q || (m.th+m.en+m.cn+m.cat).toLowerCase().includes(q)));
+
+  if(!list.length){ $('grid').innerHTML = `<div class="empty" style="grid-column:1/-1">
+    😕 ไม่พบเมนูที่ค้นหา<br><small>ลองพิมพ์คำอื่น เช่น "กะเพรา" หรือเลือกหมวดอื่น</small></div>`; return; }
+
+  $('grid').innerHTML = list.map(m=>{
+    const col = catColor(m.cat);
+    const inCart = S.cart.filter(c=>c.id===m.id).reduce((s,c)=>s+c.qty,0);
+    return `<article class="pc" style="--c1:${col.c1};--c2:${col.c2}" onclick="openItem(${m.id})">
+      <div class="pi">
+        <img src="${m.img}" alt="${esc(m.th)}" loading="lazy">
+        <span class="pcat">${m.cat}</span>
+        <span class="pp">฿${m.price}</span>
+        ${m.hot?'<span class="hotbadge">🔥 ขายดี</span>':''}
+        ${inCart?`<span class="qty-badge">×${inCart}</span>`:''}
+      </div>
+      <div class="pb">
+        <div class="pth">${esc(m.th)}</div>
+        <div class="pen">${esc(m.en)}</div>
+        <div class="pcn cn">${esc(m.cn)}</div>
+      </div>
+      <button class="add" onclick="event.stopPropagation();quickAdd(${m.id})" title="เพิ่มด่วน">+</button>
+    </article>`;
+  }).join('');
+}
+
+/* ================= เลือกตัวเลือกก่อนเพิ่ม ================= */
+var draft = null;
+function openItem(id){
+  const m = MENU.find(x=>x.id===id);
+  draft = { ...m, qty:1, spicy:'เผ็ดปกติ', addons:[], note:'' };
+  renderItemSheet();
+  $('ovItem').classList.add('show');
+}
+function renderItemSheet(){
+  const m = draft;
+  $('itemSheet').innerHTML = `
+    <div class="sh-head">
+      <div><h3>${esc(m.th)}</h3><div class="pen">${esc(m.en)} · <span class="cn">${esc(m.cn)}</span></div></div>
+      <button class="close" onclick="hide('ovItem')">×</button>
+    </div>
+    <img src="${m.img}" style="width:100%;height:170px;object-fit:cover;border-radius:12px">
+
+    <div class="label">ระดับความเผ็ด</div>
+    <div class="opts">${SHOP.spicy.map(s=>
+      `<button class="opt ${m.spicy===s?'on':''}" onclick="draft.spicy='${s}';renderItemSheet()">${s}</button>`).join('')}</div>
+
+    <div class="label">เพิ่มพิเศษ</div>
+    <div class="opts">${SHOP.addons.map(a=>
+      `<button class="opt ${m.addons.includes(a.id)?'on':''}" onclick="toggleAddon('${a.id}')">${a.label} +฿${a.price}</button>`).join('')}</div>
+
+    <div class="label">หมายเหตุถึงครัว</div>
+    <textarea id="note" placeholder="เช่น ไม่ใส่ผัก / ข้าวน้อย / แยกไข่" oninput="draft.note=this.value">${esc(m.note)}</textarea>
+
+    <div class="label">จำนวน</div>
+    <div class="stepper">
+      <button onclick="draft.qty=Math.max(1,draft.qty-1);renderItemSheet()">−</button>
+      <b>${m.qty}</b>
+      <button onclick="draft.qty++;renderItemSheet()">+</button>
+    </div>
+
+    <button class="btn primary" style="width:100%;margin-top:18px;padding:14px"
+      onclick="addDraft()">เพิ่มลงตะกร้า · ${DB.money(lineTotal(m))}</button>`;
+}
+function toggleAddon(id){
+  const i = draft.addons.indexOf(id);
+  i<0 ? draft.addons.push(id) : draft.addons.splice(i,1);
+  renderItemSheet();
+}
+function addonSum(it){ return it.addons.reduce((s,id)=> s + SHOP.addons.find(a=>a.id===id).price, 0); }
+function lineTotal(it){ return (it.price + addonSum(it)) * it.qty; }
+
+function addDraft(){ pushCart(draft); hide('ovItem'); }
+function quickAdd(id){
+  const m = MENU.find(x=>x.id===id);
+  pushCart({ ...m, qty:1, spicy:'เผ็ดปกติ', addons:[], note:'' });
+}
+function pushCart(it){
+  // ถ้าเมนู+ตัวเลือกเหมือนกันเป๊ะ ให้รวมจำนวนแทนการเพิ่มบรรทัดใหม่
+  const key = it.id + '|' + it.spicy + '|' + it.addons.slice().sort().join(',') + '|' + it.note;
+  const found = S.cart.find(c=>c.key===key);
+  found ? found.qty += it.qty : S.cart.push({ ...it, key });
+  renderCartBar(); renderGrid();
+}
+
+/* ================= ตะกร้า ================= */
+function cartSub(){ return S.cart.reduce((s,it)=>s+lineTotal(it),0); }
+function boxFee(){ return S.type==='takeaway' ? S.cart.reduce((s,it)=>s+it.qty,0) * SHOP.boxFee : 0; }
+function cartTotal(){ return cartSub() + boxFee(); }
+
+function renderCartBar(){
+  const n = S.cart.reduce((s,it)=>s+it.qty,0);
+  $('cartbar').classList.toggle('show', n>0);
+  $('cartCount').textContent = `${n} รายการ · ${S.type==='dinein'?'โต๊ะ '+S.table:'กลับบ้าน'}`;
+  $('cartTotal').textContent = DB.money(cartTotal());
+}
+function clearCart(){ if(confirm('ล้างตะกร้าทั้งหมด?')){ S.cart=[]; renderCartBar(); renderGrid(); } }
+function openCart(){ renderCartSheet(); $('ovCart').classList.add('show'); }
+
+function renderCartSheet(){
+  if(!S.cart.length){ hide('ovCart'); return; }
+  $('cartSheet').innerHTML = `
+    <div class="sh-head">
+      <h3>🧾 สรุปรายการสั่ง</h3>
+      <button class="close" onclick="hide('ovCart')">×</button>
+    </div>
+    ${S.cart.map((it,i)=>`
+      <div class="line">
+        <img src="${it.img}" alt="">
+        <div class="n">
+          <b>${esc(it.th)}</b>
+          <small>${it.spicy}${it.addons.length?' · '+it.addons.map(a=>SHOP.addons.find(x=>x.id===a).label).join(' · '):''}</small>
+          ${it.note?`<small>📝 ${esc(it.note)}</small>`:''}
+          <div class="stepper" style="margin-top:6px;transform:scale(.86);transform-origin:left">
+            <button onclick="chQty(${i},-1)">−</button><b>${it.qty}</b>
+            <button onclick="chQty(${i},1)">+</button>
+          </div>
+        </div>
+        <div class="p">${DB.money(lineTotal(it))}</div>
+      </div>`).join('')}
+
+    <div class="label">รูปแบบการรับอาหาร</div>
+    <div class="opts">
+      <button class="opt ${S.type==='dinein'?'on':''}" onclick="setType('dinein');renderCartSheet()">🍽️ ทานที่ร้าน (โต๊ะ ${S.table})</button>
+      <button class="opt ${S.type==='takeaway'?'on':''}" onclick="setType('takeaway');renderCartSheet()">🛍️ กลับบ้าน</button>
+    </div>
+
+    <div style="margin-top:16px">
+      <div class="tot"><span>ค่าอาหาร</span><span>${DB.money(cartSub())}</span></div>
+      ${boxFee()?`<div class="tot"><span>ค่ากล่อง (฿${SHOP.boxFee}×${S.cart.reduce((s,i)=>s+i.qty,0)})</span><span>${DB.money(boxFee())}</span></div>`:''}
+      <div class="tot big"><span>รวมทั้งสิ้น</span><span class="grad">${DB.money(cartTotal())}</span></div>
+    </div>
+
+    <button class="btn primary" style="width:100%;margin-top:16px;padding:15px;font-size:16px"
+      onclick="submitOrder()">ยืนยันสั่งอาหาร ✓</button>
+    <button class="btn ghost" style="width:100%;margin-top:8px" onclick="hide('ovCart')">เลือกเมนูเพิ่ม</button>`;
+}
+function chQty(i,d){
+  S.cart[i].qty += d;
+  if(S.cart[i].qty<=0) S.cart.splice(i,1);
+  renderCartBar(); renderGrid();
+  S.cart.length ? renderCartSheet() : hide('ovCart');
+}
+
+/* ================= ส่งออเดอร์เข้าครัว ================= */
+function submitOrder(){
+  const order = DB.addOrder({
+    type: S.type,
+    table: S.type==='dinein' ? S.table : '-',
+    items: S.cart.map(it=>({
+      id:it.id, th:it.th, qty:it.qty, price:it.price,
+      spicy:it.spicy, note:it.note,
+      addons: it.addons.map(a=>SHOP.addons.find(x=>x.id===a).label),
+      sum: lineTotal(it),
+    })),
+    subtotal: cartSub(), boxFee: boxFee(), total: cartTotal(),
+  });
+  hide('ovCart');
+  showDone(order);
+  S.cart = []; renderCartBar(); renderGrid();
+}
+
+function showDone(o){
+  $('doneSheet').innerHTML = `
+    <div style="text-align:center">
+      <div style="font-size:46px">✅</div>
+      <h3 style="margin-top:6px">ส่งออเดอร์เข้าครัวแล้ว!</h3>
+      <p class="pen">กรุณารอเรียกตามหมายเลขคิว</p>
+      <div class="qnum"><small style="color:var(--tx3)">หมายเลขคิว</small><b class="grad">${o.queue}</b></div>
+      <div class="pill">${o.id} · ${o.type==='dinein'?'โต๊ะ '+o.table:'กลับบ้าน'} · ${DB.money(o.total)}</div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button class="btn" style="flex:1" onclick="printSlip('${o.id}')">🖨️ พิมพ์ใบสั่ง</button>
+      <button class="btn primary" style="flex:1" onclick="hide('ovDone')">เสร็จสิ้น</button>
+    </div>`;
+  $('ovDone').classList.add('show');
+}
+
+/* ================= พิมพ์ใบสั่งอาหาร ================= */
+function printSlip(id){
+  const o = DB.all().find(x=>x.id===id);
+  $('printArea').innerHTML = `<div class="slip">
+    <h4>${SHOP.name} · ${SHOP.nameEn}</h4>
+    <div class="c">${SHOP.address}<br>โทร ${SHOP.phone}</div>
+    <hr>
+    <div class="l"><span>เลขที่</span><b>${o.id}</b></div>
+    <div class="l"><span>คิว</span><b>${o.queue}</b></div>
+    <div class="l"><span>${o.type==='dinein'?'โต๊ะ':'รูปแบบ'}</span><b>${o.type==='dinein'?o.table:'กลับบ้าน'}</b></div>
+    <div class="l"><span>เวลา</span><span>${DB.timeText(o.ts)}</span></div>
+    <hr>
+    ${o.items.map(it=>`<div class="l"><span>${it.qty}× ${it.th}<br>
+      <small style="color:#666">${it.spicy}${it.addons.length?' · '+it.addons.join(' · '):''}${it.note?' · '+it.note:''}</small></span>
+      <span>${it.sum}</span></div>`).join('')}
+    <hr>
+    ${o.boxFee?`<div class="l"><span>ค่ากล่อง</span><span>${o.boxFee}</span></div>`:''}
+    <div class="l" style="font-size:17px;font-weight:800"><span>รวม</span><span>฿${o.total}</span></div>
+    <hr><div class="c">ขอบคุณที่อุดหนุนค่ะ 🙏</div>
+  </div>`;
+  $('printArea').style.display = 'block';
+  window.print();
+  setTimeout(()=>{ $('printArea').style.display='none'; }, 300);
+}
+
+function hide(id){ $(id).classList.remove('show'); }
+init();
+</script>
+<script src="luxe.js"></script>
+</body>
+</html>

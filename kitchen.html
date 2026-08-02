@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ป้านวม · จอครัว & แคชเชียร์</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700;900&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="luxe.css">
+</head>
+<body>
+
+<!-- ฉากหลังเคลื่อนไหว (ตกแต่งอย่างเดียว) -->
+<div class="ambient" aria-hidden="true">
+  <span class="orb o1"></span><span class="orb o2"></span><span class="orb o3"></span>
+  <div class="grain"></div>
+</div>
+
+<header class="topbar">
+  <div class="wrap">
+    <div>
+      <div class="logo">👨‍🍳 จอครัว <span class="grad">ป้านวม</span></div>
+      <div class="status" id="clock"></div>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn ghost" onclick="toggleSound()" id="sndBtn">🔔 เสียงเตือน: เปิด</button>
+    <button class="btn" onclick="exportCSV()">⬇️ ออกรายงาน CSV</button>
+    <a class="btn primary" href="index.html">+ รับออเดอร์</a>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ตัวเลขสรุปวันนี้ -->
+  <div class="kpis" id="kpis"></div>
+
+  <!-- กระดานงานครัว -->
+  <div class="board" id="board"></div>
+
+  <!-- เมนูขายดี -->
+  <div class="col" style="margin-bottom:30px">
+    <h3>🏆 เมนูขายดีวันนี้ <button class="btn ghost" style="font-size:12px;padding:4px 10px" onclick="clearDay()">ล้างข้อมูลวันนี้</button></h3>
+    <div id="best"></div>
+  </div>
+</main>
+
+<div id="printArea" style="display:none"></div>
+
+<script src="menu-data.js"></script>
+<script src="store.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+
+/* ลำดับสถานะของงานในครัว */
+const FLOW = [
+  { k:'new',     t:'🟡 ออเดอร์ใหม่',  next:'cooking', btn:'เริ่มทำ →' },
+  { k:'cooking', t:'🔥 กำลังปรุง',    next:'ready',   btn:'ทำเสร็จ →' },
+  { k:'ready',   t:'✅ พร้อมเสิร์ฟ',  next:'paid',    btn:'เก็บเงิน →' },
+  { k:'paid',    t:'💰 เสร็จสิ้น',    next:null,      btn:'' },
+];
+
+var soundOn = true, lastNew = 0, lastSig = null;
+
+function render(force){
+  const orders = DB.today();
+
+  /* วาดใหม่เฉพาะตอนข้อมูลเปลี่ยนจริง
+     (ถ้าวาดทุก 3 วินาที การ์ดจะเล่นอนิเมชันซ้ำและกระพริบตลอดเวลา) */
+  const sig = JSON.stringify(orders.map(o => [o.id, o.status, o.total]));
+  if (!force && sig === lastSig) return;
+  lastSig = sig;
+
+  const s = DB.summary();
+
+  /* ---- KPI ---- */
+  $('kpis').innerHTML = `
+    <div class="kpi"><small>ออเดอร์วันนี้</small><b>${s.orders}</b></div>
+    <div class="kpi"><small>ยอดขาย (เก็บเงินแล้ว)</small><b class="grad">${DB.money(s.sales)}</b></div>
+    <div class="kpi"><small>ค้างในครัว</small><b style="color:var(--warn)">${s.waiting}</b></div>
+    <div class="kpi"><small>เฉลี่ยต่อบิล</small><b>${DB.money(s.avg)}</b></div>`;
+
+  /* ---- กระดานคัมบัง ---- */
+  $('board').innerHTML = FLOW.map(col=>{
+    const list = orders.filter(o=>o.status===col.k).sort((a,b)=>a.ts-b.ts);
+    return `<section class="col">
+      <h3>${col.t}<span>${list.length}</span></h3>
+      ${list.length ? list.map(o=>card(o,col)).join('')
+        : '<div class="empty" style="padding:26px 0;font-size:13px">— ว่าง —</div>'}
+    </section>`;
+  }).join('');
+
+  /* ---- เมนูขายดี ---- */
+  $('best').innerHTML = s.best.length
+    ? s.best.map(([name,qty],i)=>`<div class="tot"><span>${i+1}. ${esc(name)}</span><b>${qty} จาน</b></div>`).join('')
+    : '<div class="empty" style="padding:16px 0;font-size:13px">ยังไม่มียอดขายที่เก็บเงินแล้ว</div>';
+
+  /* ---- เตือนเมื่อมีออเดอร์ใหม่เข้ามา ---- */
+  const nNew = orders.filter(o=>o.status==='new').length;
+  if(nNew > lastNew && soundOn) beep();
+  lastNew = nNew;
+}
+
+function card(o, col){
+  return `<article class="ord ${o.status}">
+    <div class="h">
+      <div>
+        <div class="q">คิว ${o.queue}</div>
+        <div class="meta">${o.id} · ${DB.timeText(o.ts)} น.</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-weight:700">${o.type==='dinein'?'🍽️ โต๊ะ '+o.table:'🛍️ กลับบ้าน'}</div>
+        <div class="meta">${DB.money(o.total)}</div>
+      </div>
+    </div>
+    <ul>${o.items.map(it=>`<li>
+        <span>${it.qty}× ${esc(it.th)}
+          <small>${it.spicy}${it.addons.length?' · '+it.addons.map(esc).join(' · '):''}</small>
+        </span><span>${it.sum}</span>
+      </li>`).join('')}</ul>
+    ${o.items.filter(i=>i.note).map(i=>`<div class="note">📝 ${esc(i.th)}: ${esc(i.note)}</div>`).join('')}
+    <div class="f">
+      ${col.next?`<button class="btn primary" onclick="DB.setStatus('${o.id}','${col.next}')">${col.btn}</button>`:''}
+      <button class="btn ghost" onclick="printSlip('${o.id}')" title="พิมพ์ใบเสร็จ">🖨️</button>
+      <button class="btn ghost" onclick="del('${o.id}')" title="ยกเลิกออเดอร์">🗑️</button>
+    </div>
+  </article>`;
+}
+
+function del(id){ if(confirm('ยกเลิก/ลบออเดอร์นี้?')) DB.remove(id); }
+function clearDay(){ if(confirm('ล้างออเดอร์ทั้งหมดของวันนี้?\n(ยอดขายจะถูกลบด้วย)')) DB.clearToday(); }
+
+/* ---- เสียงเตือนออเดอร์ใหม่ (ไม่ต้องใช้ไฟล์เสียง) ---- */
+function beep(){
+  try{
+    const ac = new (window.AudioContext||window.webkitAudioContext)();
+    [880,1180].forEach((f,i)=>{
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.frequency.value = f; o.type = 'sine';
+      o.connect(g); g.connect(ac.destination);
+      g.gain.setValueAtTime(.18, ac.currentTime + i*.16);
+      g.gain.exponentialRampToValueAtTime(.001, ac.currentTime + i*.16 + .15);
+      o.start(ac.currentTime + i*.16); o.stop(ac.currentTime + i*.16 + .16);
+    });
+  }catch(e){}
+}
+function toggleSound(){
+  soundOn = !soundOn;
+  $('sndBtn').textContent = soundOn ? '🔔 เสียงเตือน: เปิด' : '🔕 เสียงเตือน: ปิด';
+}
+
+/* ---- ใบเสร็จ ---- */
+function printSlip(id){
+  const o = DB.all().find(x=>x.id===id);
+  $('printArea').innerHTML = `<div class="slip">
+    <h4>${SHOP.name} · ${SHOP.nameEn}</h4>
+    <div class="c">${SHOP.address}<br>โทร ${SHOP.phone}</div>
+    <hr>
+    <div class="l"><span>เลขที่</span><b>${o.id}</b></div>
+    <div class="l"><span>คิว</span><b>${o.queue}</b></div>
+    <div class="l"><span>${o.type==='dinein'?'โต๊ะ':'รูปแบบ'}</span><b>${o.type==='dinein'?o.table:'กลับบ้าน'}</b></div>
+    <div class="l"><span>เวลา</span><span>${DB.timeText(o.ts)}</span></div>
+    <hr>
+    ${o.items.map(it=>`<div class="l"><span>${it.qty}× ${it.th}</span><span>${it.sum}</span></div>`).join('')}
+    <hr>
+    ${o.boxFee?`<div class="l"><span>ค่ากล่อง</span><span>${o.boxFee}</span></div>`:''}
+    <div class="l" style="font-size:17px;font-weight:800"><span>รวม</span><span>฿${o.total}</span></div>
+    <hr><div class="c">ขอบคุณที่อุดหนุนค่ะ 🙏</div>
+  </div>`;
+  $('printArea').style.display='block';
+  window.print();
+  setTimeout(()=>{ $('printArea').style.display='none'; },300);
+}
+
+/* ---- ออกรายงานยอดขาย CSV (เปิดใน Excel ได้) ---- */
+function exportCSV(){
+  const rows = [['เลขที่','คิว','เวลา','ประเภท','โต๊ะ','เมนู','จำนวน','ราคารวม','สถานะบิล','ยอดบิล']];
+  DB.today().forEach(o=>o.items.forEach(it=>rows.push([
+    o.id, o.queue, DB.timeText(o.ts),
+    o.type==='dinein'?'ทานที่ร้าน':'กลับบ้าน', o.table,
+    it.th, it.qty, it.sum,
+    ({new:'ใหม่',cooking:'กำลังทำ',ready:'พร้อมเสิร์ฟ',paid:'เก็บเงินแล้ว'})[o.status], o.total
+  ])));
+  const csv = '﻿' + rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download = `panuam-sales-${DB.dateKey()}.csv`;
+  a.click();
+}
+
+/* ---- นาฬิกา + รีเฟรชอัตโนมัติ ---- */
+setInterval(()=>{
+  $('clock').textContent = new Date().toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'});
+}, 1000);
+window.addEventListener('db:changed', render);   // เปลี่ยนในแท็บเดียวกัน
+window.addEventListener('storage', render);      // เปลี่ยนจากแท็บอื่น
+setInterval(render, 3000);                       // กันพลาด
+render();
+</script>
+<script src="luxe.js"></script>
+</body>
+</html>

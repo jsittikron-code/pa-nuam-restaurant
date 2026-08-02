@@ -1,0 +1,258 @@
+/* ==================================================================
+   luxe.css — ชั้น "แต่งภาพเคลื่อนไหว" สไตล์ภัตตาคาร 5 ดาว
+   โหลดต่อจาก app.css เท่านั้น ถ้าลบไฟล์นี้ออก ระบบยังทำงานปกติทุกอย่าง
+   ================================================================== */
+
+:root{
+  --gold:#f3c96b;          /* ทองอ่อน */
+  --gold2:#c9962e;         /* ทองเข้ม */
+  --gold-lite:rgba(243,201,107,.5);
+  --ease:cubic-bezier(.22,.85,.28,1);
+}
+
+/* ---------- ตัวอักษรหรูสำหรับหัวข้อภาษาอังกฤษ ----------
+   ใช้เฉพาะข้อความ ไม่ใช้กับตัวเลข เพราะฟอนต์คลาสสิกเขียนเลข 0 เตี้ยเหมือนตัว o
+   ราคาจะอ่านเป็น "฿8o" แทน "฿80" */
+.serif,.logo,.slip h4{font-family:'Cormorant Garamond','Kanit',Georgia,serif}
+.logo{font-size:23px;letter-spacing:2.4px;font-weight:600}
+.kpi b,.ord .q,.pp,.qnum b,.cartinfo b{font-variant-numeric:tabular-nums lining-nums}
+
+/* ==================================================================
+   1) ฉากหลังเคลื่อนไหว — ดวงไฟอบอุ่นลอยช้า ๆ + เกรนฟิล์ม
+   ================================================================== */
+.ambient{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.hero,main,footer,.grid{position:relative;z-index:1}
+
+.orb{position:absolute;border-radius:50%;filter:blur(70px);opacity:.4;
+  will-change:transform}
+.o1{width:46vw;height:46vw;left:-12vw;top:-10vw;
+  background:radial-gradient(circle,rgba(255,94,26,.55),transparent 68%);
+  animation:drift1 26s ease-in-out infinite}
+.o2{width:38vw;height:38vw;right:-10vw;top:12vh;
+  background:radial-gradient(circle,rgba(243,201,107,.42),transparent 68%);
+  animation:drift2 32s ease-in-out infinite}
+.o3{width:34vw;height:34vw;left:28vw;bottom:-14vw;
+  background:radial-gradient(circle,rgba(255,34,71,.36),transparent 68%);
+  animation:drift3 38s ease-in-out infinite}
+@keyframes drift1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(7vw,6vh) scale(1.15)}}
+@keyframes drift2{0%,100%{transform:translate(0,0) scale(1.05)}50%{transform:translate(-6vw,9vh) scale(.9)}}
+@keyframes drift3{0%,100%{transform:translate(0,0) scale(.95)}50%{transform:translate(5vw,-7vh) scale(1.12)}}
+
+/* เกรนฟิล์มบาง ๆ ให้ภาพดูมีเนื้อ ไม่แบน */
+.grain{position:absolute;inset:-120%;opacity:.045;pointer-events:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/></filter><rect width='140' height='140' filter='url(%23n)'/></svg>");
+  animation:grainShift 700ms steps(4) infinite}
+@keyframes grainShift{
+  0%{transform:translate(0,0)}25%{transform:translate(-3%,2%)}
+  50%{transform:translate(2%,-3%)}75%{transform:translate(-2%,-2%)}100%{transform:translate(0,0)}}
+
+/* ---------- ละอองไฟลอยขึ้น (สร้างจาก luxe.js) ---------- */
+.embers{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.ember{position:absolute;bottom:-12px;width:3px;height:3px;border-radius:50%;
+  background:var(--gold);box-shadow:0 0 8px 1px rgba(243,201,107,.75);
+  opacity:0;animation:rise linear infinite}
+@keyframes rise{
+  0%{opacity:0;transform:translate3d(0,0,0) scale(.5)}
+  12%{opacity:.85}
+  70%{opacity:.5}
+  100%{opacity:0;transform:translate3d(var(--dx,20px),-104vh,0) scale(1.1)}}
+
+/* ==================================================================
+   2) ม่านเปิดร้าน — โชว์ครั้งเดียวตอนโหลดหน้า
+   ================================================================== */
+.intro{position:fixed;inset:0;z-index:200;display:grid;place-items:center;
+  background:radial-gradient(circle at 50% 45%,#1a1220,#070410 70%);
+  transition:opacity .7s var(--ease),visibility .7s}
+.intro.gone{opacity:0;visibility:hidden}
+.intro-mark{text-align:center;position:relative}
+.intro-mark .ring{position:absolute;left:50%;top:50%;width:170px;height:170px;
+  margin:-85px 0 0 -85px;border-radius:50%;
+  border:1px solid rgba(243,201,107,.28);border-top-color:var(--gold);
+  animation:ringSpin 1.5s var(--ease) infinite}
+@keyframes ringSpin{to{transform:rotate(360deg)}}
+.intro-mark b{display:block;font-size:40px;font-weight:900;
+  background:linear-gradient(100deg,var(--g1),var(--g2) 50%,var(--g3));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:markIn .9s var(--ease) both}
+.intro-mark small{display:block;margin-top:6px;font-size:11.5px;letter-spacing:6px;
+  color:var(--gold);font-family:'Cormorant Garamond',serif;
+  animation:markIn .9s .15s var(--ease) both}
+@keyframes markIn{from{opacity:0;transform:translateY(14px);letter-spacing:14px}
+  to{opacity:1;transform:none}}
+
+/* ==================================================================
+   3) หัวเรื่อง — แสงทองกวาดผ่าน + เครื่องหมายประดับ
+   ================================================================== */
+.hero{padding-top:52px}
+.hero h1{position:relative;display:inline-block;
+  animation:heroIn 1s .1s var(--ease) both}
+/* ทองไหลอยู่ในตัวอักษรเอง (ไม่วางแผ่นทับ จะได้ไม่เกิดกล่องสีเทา) */
+.hero h1 .grad{
+  background:linear-gradient(100deg,var(--g1) 0%,var(--g2) 26%,#fff3cf 44%,
+             var(--g3) 58%,var(--g2) 76%,var(--g1) 100%);
+  background-size:300% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:goldFlow 7s ease-in-out infinite}
+@keyframes goldFlow{0%,100%{background-position:0 0}50%{background-position:100% 0}}
+@keyframes heroIn{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+.hero p{animation:heroIn 1s .28s var(--ease) both}
+.hero .info{animation:heroIn 1s .42s var(--ease) both}
+
+/* เส้นประดับ ◆ ใต้หัวเรื่อง */
+.orn{display:flex;align-items:center;justify-content:center;gap:14px;
+  margin:14px auto 2px;max-width:340px;color:var(--gold);
+  animation:heroIn 1s .55s var(--ease) both}
+.orn i{height:1px;flex:1;transform-origin:center;
+  background:linear-gradient(90deg,transparent,var(--gold-lite),transparent);
+  animation:lineGrow 1.1s .7s var(--ease) both}
+.orn span{font-size:10px;letter-spacing:5px;animation:diamond 4s ease-in-out infinite}
+@keyframes lineGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes diamond{0%,100%{opacity:.5;transform:rotate(0)}50%{opacity:1;transform:rotate(180deg)}}
+
+/* ป้ายข้อมูลร้าน — ขอบทองเรืองเมื่อชี้ */
+.pill{transition:.3s var(--ease);backdrop-filter:blur(6px)}
+.pill:hover{border-color:var(--gold-lite);color:#fff;transform:translateY(-2px);
+  box-shadow:0 6px 20px rgba(243,201,107,.14)}
+
+/* ==================================================================
+   4) การ์ดเมนู — ค่อย ๆ ลอยขึ้นตอนเลื่อนถึง + เอียงตามเมาส์ + แสงกวาด
+   ================================================================== */
+.grid{perspective:1200px}
+.pc{will-change:transform;
+  transition:transform .5s var(--ease),box-shadow .4s,border-color .4s,opacity .6s}
+
+/* เข้าฉากทีละใบ (JS เป็นคนใส่คลาส .rv ให้ ถ้าไม่มี JS การ์ดจะแสดงปกติ) */
+.pc.rv{opacity:0;transform:translateY(30px) scale(.96)}
+.pc.rv.in{opacity:1;transform:none}
+
+/* เอียง 3 มิติตามเมาส์ (ค่า --rx/--ry มาจาก luxe.js) */
+.pc.rv.in:hover,.pc:hover{
+  transform:translateY(-8px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));
+  box-shadow:0 22px 44px rgba(0,0,0,.55),0 0 0 1px rgba(243,201,107,.22);
+  border-color:transparent}
+
+/* แสงทองกวาดผ่านการ์ดตอนชี้ */
+.pc::after{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;
+  background:linear-gradient(112deg,transparent 42%,rgba(243,201,107,.26) 50%,transparent 58%);
+  background-size:250% 100%;background-position:190% 0;transition:background-position .85s var(--ease)}
+.pc:hover::after{background-position:-90% 0}
+
+/* กรอบไล่สีหายใจเบา ๆ */
+.pc::before{transition:opacity .4s}
+.pc:hover::before{opacity:1}
+
+.pi img{transition:transform 1.1s var(--ease),filter .5s;filter:saturate(1.02)}
+.pc:hover .pi img{transform:scale(1.12);filter:saturate(1.18) contrast(1.05)}
+
+/* ป้ายราคา — เรืองทองตอนชี้ */
+.pp{transition:.35s var(--ease)}
+.pc:hover .pp{background:linear-gradient(100deg,var(--g1),var(--g2));color:#1a1020;
+  border-color:transparent;box-shadow:0 4px 16px rgba(255,94,26,.45)}
+
+/* ป้าย "ขายดี" กะพริบนุ่ม ๆ */
+.hotbadge{animation:hotPulse 2.4s ease-in-out infinite}
+@keyframes hotPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,34,71,.5)}
+  50%{box-shadow:0 0 0 7px rgba(255,34,71,0)}}
+
+/* ปุ่ม + วงกลม */
+.add{transition:transform .32s var(--ease),box-shadow .32s}
+.pc:hover .add{transform:scale(1.16) rotate(90deg);box-shadow:0 6px 22px rgba(255,94,26,.6)}
+.add:active{transform:scale(.9) rotate(90deg)}
+.qty-badge{animation:pop .35s var(--ease)}
+@keyframes pop{0%{transform:scale(0)}62%{transform:scale(1.25)}100%{transform:scale(1)}}
+
+/* ==================================================================
+   5) ปุ่ม / ชิป — คลื่นกระเพื่อมตอนกด + ไล่สีเลื่อน
+   ================================================================== */
+.btn,.chip,.opt,.seg button,.add,.stepper button{position:relative;overflow:hidden;isolation:isolate}
+/* ทำให้ <a class="btn"> เป็นกล่องจริง คลื่นกระเพื่อมจะได้อยู่ในกรอบปุ่ม */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.ripple{position:absolute;border-radius:50%;transform:scale(0);pointer-events:none;
+  background:rgba(255,255,255,.35);animation:ripple .6s ease-out forwards;z-index:0}
+@keyframes ripple{to{transform:scale(2.6);opacity:0}}
+
+.btn.primary{background-size:200% 100%;transition:.35s var(--ease)}
+.btn.primary:hover{background-position:100% 0;
+  box-shadow:0 8px 26px rgba(255,94,26,.45);transform:translateY(-2px)}
+.btn.primary:active{transform:translateY(0) scale(.98)}
+
+.chip{transition:.28s var(--ease)}
+.chip:hover:not(.on){border-color:var(--gold-lite);color:#fff;transform:translateY(-2px)}
+.chip.on{animation:pop .32s var(--ease);box-shadow:0 5px 18px rgba(255,94,26,.32)}
+
+/* จุดสถานะเปิดร้าน — เต้นเป็นจังหวะ */
+.dot.on{animation:beat 2s ease-in-out infinite}
+@keyframes beat{0%,100%{box-shadow:0 0 0 0 rgba(57,224,160,.55)}
+  55%{box-shadow:0 0 0 7px rgba(57,224,160,0)}}
+
+/* ==================================================================
+   6) ตะกร้า + หน้าต่างซ้อน
+   ================================================================== */
+.cartbar{transition:transform .5s var(--ease);
+  box-shadow:0 -14px 40px rgba(0,0,0,.5);
+  border-top:1px solid var(--gold-lite)}
+.cartbar::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  animation:sweepLine 3.6s ease-in-out infinite}
+@keyframes sweepLine{0%,100%{opacity:.25;transform:translateX(-30%)}
+  50%{opacity:.9;transform:translateX(30%)}}
+.cartinfo b{font-size:24px;display:inline-block}
+.cartinfo b.bump{animation:bump .45s var(--ease)}
+@keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.28);color:var(--gold)}100%{transform:scale(1)}}
+
+.ov{transition:opacity .3s;backdrop-filter:blur(9px) saturate(1.2)}
+.sheet{animation:sheetIn .45s var(--ease);
+  box-shadow:0 -20px 60px rgba(0,0,0,.6),0 0 0 1px rgba(243,201,107,.14)}
+@keyframes sheetIn{from{transform:translateY(46px) scale(.97);opacity:0}
+  to{transform:none;opacity:1}}
+.line{animation:lineIn .4s var(--ease) both}
+@keyframes lineIn{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+.opt{transition:.22s var(--ease)}
+.opt:hover{transform:translateY(-2px);border-color:var(--gold-lite)}
+.opt.on{box-shadow:0 4px 14px rgba(255,94,26,.25)}
+.stepper button:active{transform:scale(.85)}
+
+/* หน้าจอสั่งสำเร็จ — เลขคิวเด้งพร้อมรัศมีทอง */
+.qnum b{animation:queueIn .8s var(--ease) both;
+  background:linear-gradient(100deg,var(--g1),var(--g2) 55%,var(--g3));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+@keyframes queueIn{0%{opacity:0;transform:scale(.4) rotate(-8deg)}
+  60%{transform:scale(1.14) rotate(2deg)}100%{opacity:1;transform:none}}
+.qnum::after{content:"";display:block;width:64px;height:1px;margin:14px auto 0;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  animation:lineGrow .7s .4s var(--ease) both}
+
+/* ==================================================================
+   7) จอครัว — ตัวเลขเรืองแสง / การ์ดออเดอร์ไหลเข้า
+   ================================================================== */
+.kpi{position:relative;overflow:hidden;transition:.4s var(--ease)}
+.kpi:hover{transform:translateY(-3px);border-color:var(--gold-lite);
+  box-shadow:0 14px 34px rgba(0,0,0,.45)}
+.kpi::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(115deg,transparent 40%,rgba(243,201,107,.14) 50%,transparent 60%);
+  background-size:250% 100%;animation:kpiSheen 6s ease-in-out infinite}
+@keyframes kpiSheen{0%{background-position:190% 0}60%,100%{background-position:-90% 0}}
+.kpi b{font-size:32px}
+.kpi.flash b{animation:bump .5s var(--ease)}
+
+.col{transition:.3s}
+.ord{animation:ordIn .45s var(--ease) both;transition:.3s var(--ease)}
+@keyframes ordIn{from{opacity:0;transform:translateY(-14px) scale(.97)}to{opacity:1;transform:none}}
+.ord:hover{transform:translateX(3px);border-color:var(--line2)}
+.ord.new{animation:ordIn .45s var(--ease) both,blink 1.6s ease-in-out infinite .45s}
+.ord.ready{box-shadow:inset 3px 0 14px -8px var(--ok)}
+.note{animation:noteIn .5s var(--ease) both}
+@keyframes noteIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+
+/* ==================================================================
+   8) เคารพผู้ใช้ที่ตั้งค่า "ลดการเคลื่อนไหว" ในระบบปฏิบัติการ
+   ================================================================== */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;
+    transition-duration:.01ms!important;scroll-behavior:auto!important}
+  .embers,.grain{display:none}
+  .pc.rv{opacity:1;transform:none}
+}
+
+/* ไม่พิมพ์ลูกเล่นลงกระดาษ */
+@media print{.ambient,.embers,.intro{display:none!important}}
